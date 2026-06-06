@@ -151,8 +151,9 @@ Measured on a local LEZ standalone sequencer (`nssa_core` tag `v0.2.0-rc3`):
 The two negative cases were rejected on-chain with the documented codes: minting by
 the former authority after a rotation returns `Program error [1008]` (Unauthorized),
 and minting after `revoke_authority` returns `Program error [9003]` (`ERR_MINT_REVOKED`,
-custom code 3003). The full terminal transcript is in `demo/` (`demo.cast` /
-`demo.gif`); measured per-operation cycle counts are in
+custom code 3003). The flow is reproduced by `demo/run_demo.sh` against a real local
+sequencer, and is shown end to end in the narrated video walkthrough (see
+[demo/README.md](demo/README.md)). Measured per-operation cycle counts are in
 [docs/CU_COST.md](docs/CU_COST.md).
 
 ## Status of verification
@@ -165,7 +166,8 @@ What is verified in this repository:
 - the committed IDL parses and describes all four instructions and both account types.
 
 What was exercised on a local LEZ standalone sequencer with `RISC0_DEV_MODE=0`
-(captured in `demo/demo.cast` / `demo/demo.gif`, addresses above):
+(reproduced by `demo/run_demo.sh` and captured in the narrated video walkthrough,
+addresses above):
 
 - the deployable program `.bin` (built and validated with `spel program-id`),
 - deploy + both example integrations end to end (create / mint / rotate / revoke),

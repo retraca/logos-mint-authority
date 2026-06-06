@@ -4,20 +4,17 @@ This file holds (1) the exact content to put in `solutions/LP-0013.md` in the
 `logos-co/lambda-prize` repo, and (2) the step-by-step PR process. The text below
 follows the prize's `solutions/LP-0000.md` template verbatim.
 
-Two placeholders must be filled before opening the PR:
+The repo URL is filled in below. One placeholder remains before opening the PR:
 
-- `<REPO_URL>` — the public repository URL. This deliverable currently lives inside
-  a monorepo; push `companies/logos/lp-0013-mint-authority/` to its own public repo
-  first (see "PR steps" below). The sibling RFP libs use `retraca/logos-authority-libs`;
-  a natural slug here is `retraca/logos-mint-authority` (or add it to the same libs repo).
-- `<VIDEO_URL>` — the narrated video walkthrough. The prize requires a *narrated*
+- **Repo URL:** `https://github.com/retraca/logos-mint-authority` (public, already
+  pushed). Done.
+- `<VIDEO_URL>`: the narrated video walkthrough. The prize requires a *narrated*
   walkthrough (explain what/why, architecture, key decisions) that also shows the
-  end-to-end flow with `RISC0_DEV_MODE=0`. The recorded terminal cast
-  (`demo/demo.cast` / `demo/demo.gif`) is the demonstration material; the narration
-  still has to be recorded by the builder over it (a silent screencast is explicitly
-  not sufficient). Upload to YouTube/Loom and put the link here. The raw cast can
-  also be published with `asciinema upload demo/demo.cast` and linked as supporting
-  material.
+  end-to-end flow with `RISC0_DEV_MODE=0`. The reproducible driver `demo/run_demo.sh`
+  runs that flow against a real local sequencer; the builder records narration while
+  it runs (a silent screencast is explicitly not sufficient). Upload to YouTube/Loom
+  and put the link here. (The raw terminal recordings from the original run are not
+  committed because they captured the demo wallet's seed phrase.)
 
 ---
 
@@ -43,7 +40,7 @@ sequencer with `RISC0_DEV_MODE=0`.
 
 ## Repository
 
-- **Repo:** <REPO_URL>
+- **Repo:** https://github.com/retraca/logos-mint-authority
 
 ## Approach
 
@@ -125,12 +122,13 @@ authority, or front-run a rotation); that guarantee is exactly what would be los
 - [x] CU cost documented for mint/rotate/revoke: `docs/CU_COST.md`, measured from
   the `RISC0_DEV_MODE=0` run.
 - [x] Deployed and tested on a LEZ standalone sequencer with `RISC0_DEV_MODE=0`:
-  `demo/` (cast + gif + sequencer log).
+  reproduced by `demo/run_demo.sh`; addresses and image id in the README.
 - [x] Reproducible demo script: `scripts/demo.sh` / `demo/run_demo.sh`.
 - [ ] CI green on the default branch: host tests + fmt + clippy + the for-target
-  guest build are green locally; confirm once pushed and Actions runs.
-- [ ] Narrated video demo: terminal flow recorded (`demo/demo.cast`); narration to
-  be recorded over it by the builder.
+  guest build are green locally; the CI workflow is added in a follow-up push
+  (needs a `workflow`-scope token), then confirm once Actions runs.
+- [ ] Narrated video demo: the flow is reproducible via `demo/run_demo.sh`; the
+  narrated walkthrough is recorded by the builder (see `<VIDEO_URL>` below).
 
 ## FURPS Self-Assessment
 
@@ -162,7 +160,7 @@ between operations. The model adds 33 bytes to token state and 0 extra accounts 
 any transaction.
 
 ### Supportability
-24 library + 8 example host tests pass; fmt and clippy clean; the guest compiles
+24 library + 7 example host tests pass (31 total); fmt and clippy clean; the guest compiles
 for the `riscv32im-risc0-zkvm-elf` target (ELF checked in). README has deploy
 steps, program image id, PDA addresses, and CLI usage; `docs/AUTHORITY_MODEL.md`
 documents semantics and error codes; `DELIVERABLES.md` maps each criterion to
@@ -170,9 +168,9 @@ code/tests/evidence. The R0BF packaging workaround is scripted and self-testing.
 
 ## Supporting Materials
 
-- Recorded terminal demo: `demo/demo.cast`, `demo/demo.gif`, transcript
-  `demo/demo.txt`, sequencer log `demo/sequencer.log`.
-- Narrated walkthrough: <VIDEO_URL>
+- Reproducible end-to-end driver: `demo/run_demo.sh` (real local sequencer,
+  `RISC0_DEV_MODE=0`); on-chain addresses and program image id in the README.
+- Narrated walkthrough: TODO: narrated video (`<VIDEO_URL>`)
 - Design docs: `docs/AUTHORITY_MODEL.md`, `docs/CU_COST.md`.
 - Per-criterion mapping: `DELIVERABLES.md`.
 
@@ -186,36 +184,39 @@ By submitting this solution, I confirm that I have read and agree to the
 
 ## PR steps (logos-co/lambda-prize)
 
-1. **Publish the implementation repo.** Push
-   `companies/logos/lp-0013-mint-authority/` to a public repo, e.g.
-   `retraca/logos-mint-authority`, dual-licensed MIT OR Apache-2.0 (license files
-   are already in the tree). Commit the `demo/` artifacts. Set `<REPO_URL>` above
-   to that URL.
-2. **Record + upload the narrated video.** Narrate over the `demo/demo.cast`
-   playback (or re-run `demo/run_demo.sh` live) explaining the authority model,
-   the R0BF packaging workaround, and the on-chain rejections, with the terminal
-   showing `RISC0_DEV_MODE=0`. Upload and set `<VIDEO_URL>`.
-3. **Confirm CI is green** on the implementation repo's default branch (host
+1. **Publish the implementation repo.** Done: public at
+   `https://github.com/retraca/logos-mint-authority`, dual-licensed MIT OR
+   Apache-2.0 (license files are in the tree). The terminal recordings are not
+   committed (they held the demo wallet seed); `demo/run_demo.sh` is the
+   reproducible driver.
+2. **Push the CI workflow.** `.github/workflows/ci.yml` exists locally but is not
+   yet on the public repo (it needs a `workflow`-scope token). Refresh the token
+   (`gh auth refresh -h github.com -s workflow`), then add and push it so Actions
+   runs.
+3. **Record + upload the narrated video.** Re-run `demo/run_demo.sh` live (or play
+   back the original run) explaining the authority model, the R0BF packaging
+   workaround, and the on-chain rejections, with the terminal showing
+   `RISC0_DEV_MODE=0`. Upload and replace `TODO: narrated video` / `<VIDEO_URL>`.
+4. **Confirm CI is green** on the implementation repo's default branch (host
    tests + fmt + clippy + for-target guest build) once Actions has run.
-4. **Fork and branch** `logos-co/lambda-prize`:
+5. **Fork and branch** `logos-co/lambda-prize` (the fork and the
+   `lp-0013-solution` branch with `solutions/LP-0013.md` are already staged on the
+   builder's fork; only the video URL and the `gh pr create` remain):
    ```bash
-   gh repo fork logos-co/lambda-prize --clone
-   cd lambda-prize
-   git checkout -b solution-lp-0013
+   gh repo fork logos-co/lambda-prize --clone=false
+   git checkout -b lp-0013-solution
    ```
-5. **Add the solution file** `solutions/LP-0013.md` with the paste-ready content
-   above (placeholders filled). Read `solutions/LP-0000.md` and `TERMS.md` in the
-   repo first to confirm the template/terms have not changed.
-6. **Open the PR**, titled exactly:
+6. **Add the solution file** `solutions/LP-0013.md` with the paste-ready content
+   above (repo URL filled, video URL pending). Read `solutions/LP-0000.md` and
+   `TERMS.md` in the repo first to confirm the template/terms have not changed.
+7. **Open the PR** (only after the video URL is filled in), titled exactly:
    `Solution: LP-0013 — Token program mint authority for the Logos Execution Zone`
    ```bash
-   git add solutions/LP-0013.md
-   git commit -m "Solution: LP-0013 — Token program mint authority for the LEZ"
-   git push -u origin solution-lp-0013
+   git push -u origin lp-0013-solution
    gh pr create --repo logos-co/lambda-prize \
      --title "Solution: LP-0013 — Token program mint authority for the Logos Execution Zone" \
      --body-file <(sed -n '/^# Solution: LP-0013/,/Terms & Conditions/p' solutions/LP-0013.md)
    ```
-7. **After the PR merges**, file the payment claim using the Lambda Prize payment
+8. **After the PR merges**, file the payment claim using the Lambda Prize payment
    issue template (do not file it before merge). Limits: max 3 submissions per
    prize per builder, at most one submission/review per week.

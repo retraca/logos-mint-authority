@@ -55,8 +55,9 @@ sequencer is run with `RISC0_INFO=1` (which `scripts/demo.sh` / `demo/run_demo.s
 set), as `N user cycles` and `M total cycles`. `user_cycles` is the program's
 actual executed instruction count (the meaningful CU measure); `total_cycles` is
 that padded up to the next power-of-two zkVM segment size that the prover would
-charge for. The numbers below are read directly from the recorded run's
-`demo/sequencer.log`.
+charge for. The numbers below are read directly from the sequencer log of the
+`RISC0_DEV_MODE=0` run reproduced by `demo/run_demo.sh` (the raw log is not
+committed because it captured the demo wallet's seed phrase).
 
 | Operation | user cycles | total cycles (= prover segment) | segments | Notes |
 |---|---|---|---|---|

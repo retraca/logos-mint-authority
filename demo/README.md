@@ -1,19 +1,22 @@
-# Recorded end-to-end demo (RISC0_DEV_MODE=0)
+# End-to-end demo (RISC0_DEV_MODE=0)
 
-Captured 2026-06-05 on a local LEZ standalone sequencer (`sequencer_service
---features standalone`, LEZ `nssa_core` tag `v0.2.0-rc3`), arm64 macOS, with
-`RISC0_DEV_MODE=0` (real guest execution, not dev mode).
+The flow was run on 2026-06-05 on a local LEZ standalone sequencer
+(`sequencer_service --features standalone`, LEZ `nssa_core` tag `v0.2.0-rc3`),
+arm64 macOS, with `RISC0_DEV_MODE=0` (real guest execution and proof generation,
+not dev mode).
 
 ## Files
 
-- `demo.cast` — asciinema v3 recording of the full terminal session.
-- `demo.gif` — rendered animation of the same (via `agg`).
-- `demo.txt` — plain-text transcript of the terminal output.
-- `sequencer.log` — the sequencer's log for the run: per-execution zkVM cycle
-  counts (`RISC0_INFO=1`) and the on-chain rejection lines with their program
-  error codes.
-- `run_demo.sh` — the script that produced the recording (resets the local chain,
-  starts the sequencer, deploys the R0BF `.bin`, runs both integrations).
+- `run_demo.sh`: the reproducible driver that produced the run. It resets the
+  local chain, starts the sequencer with `RISC0_INFO=1`, deploys the R0BF `.bin`,
+  and runs both example integrations end to end.
+
+The raw terminal recordings from that run (asciinema cast, rendered GIF,
+plain-text transcript, and the sequencer log) are deliberately **not** committed:
+they captured the local wallet seed phrase used to sign the demo transactions, so
+publishing them would leak a key. The reproducible driver above plus the narrated
+video walkthrough are the published evidence. The measured per-operation cycle
+counts pulled from that run's sequencer log are recorded in `../docs/CU_COST.md`.
 
 ## What the run shows
 
@@ -28,9 +31,7 @@ Integration 2 (fixed supply with revoked authority):
 **rejected `[9003]` `ERR_MINT_REVOKED` (custom 3003)**.
 
 Each successful transaction is confirmed ("included in a block"); the two negative
-cases are rejected by the sequencer and never mutate state. The exact rejection
-codes are in `sequencer.log` (`Program error [1008]` and `Program error [9003]`).
+cases are rejected by the sequencer and never mutate state.
 
-Note on playback: the demo waits ~12s per transaction for block confirmation, so
-the cast has real idle gaps. Measured per-operation cycle counts derived from this
-run's `sequencer.log` are in `../docs/CU_COST.md`.
+Note: the demo waits ~12s per transaction for block confirmation, so the run has
+real idle gaps between operations.

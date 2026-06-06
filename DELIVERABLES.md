@@ -12,7 +12,7 @@ cargo test --workspace                                   # 31 host tests (24 lib
 cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings
 cd mint-authority/examples/spel-token-guest && \
   cargo +risc0 build --release --target riscv32im-risc0-zkvm-elf   # guest compiles for-target
-# end-to-end on a real sequencer (Docker + prover): ./scripts/demo.sh  (recorded for the video)
+# end-to-end on a real sequencer (Docker + prover): ./scripts/demo.sh  (or demo/run_demo.sh; the narrated video walks this)
 ```
 
 ## Functionality
@@ -44,33 +44,37 @@ cd mint-authority/examples/spel-token-guest && \
 
 | Criterion | Implementation | Status |
 |---|---|---|
-| Document CU cost of mint, rotate, revoke on LEZ | `docs/CU_COST.md`: cycle-cost model + transaction-shape overhead + measured per-operation cycle counts | **DONE** — measured on the `RISC0_DEV_MODE=0` standalone-sequencer run (revoke ~100.6k < rotate ~124.2k < mint ~187.9–191.3k < create ~205.8–208.8k user cycles); see `demo/sequencer.log` |
+| Document CU cost of mint, rotate, revoke on LEZ | `docs/CU_COST.md`: cycle-cost model + transaction-shape overhead + measured per-operation cycle counts | **DONE**. Measured on the `RISC0_DEV_MODE=0` standalone-sequencer run (revoke ~100.6k < rotate ~124.2k < mint ~187.9-191.3k < create ~205.8-208.8k user cycles), read from that run's sequencer log (not committed; held the demo wallet seed) and reproducible via `demo/run_demo.sh` |
 
 ## Supportability
 
 | Criterion | Implementation | Status |
 |---|---|---|
-| Deployed and tested on LEZ devnet/testnet | deployed + both integrations run on a local LEZ standalone sequencer with `RISC0_DEV_MODE=0` | **DONE** — image `34f3497a…`; see `demo/` (cast/gif/log) and the addresses in the README (no public hosted sequencer exists; standalone-local is the supported path) |
-| E2E integration tests against a LEZ sequencer (standalone) in CI | `scripts/demo.sh` is the standalone-sequencer e2e; CI runs host tests + fmt + clippy + the for-target guest build (`.github/workflows/ci.yml`) | CI builds the guest for-target; the Docker+prover standalone run is heavy and runs via the demo script, recorded for the video |
-| CI green on default branch | `.github/workflows/ci.yml` (host `test`/`fmt`/`clippy` job + `guest-build` job) | host job verified locally (31 tests, clean fmt/clippy); see honesty note below |
+| Deployed and tested on LEZ devnet/testnet | deployed + both integrations run on a local LEZ standalone sequencer with `RISC0_DEV_MODE=0` | **DONE**. Image `34f3497a...`; on-chain addresses in the README, reproducible via `demo/run_demo.sh` (no public hosted sequencer exists; standalone-local is the supported path) |
+| E2E integration tests against a LEZ sequencer (standalone) in CI | `scripts/demo.sh` / `demo/run_demo.sh` is the standalone-sequencer e2e; CI runs host tests + fmt + clippy + the for-target guest build | CI (`.github/workflows/ci.yml`) builds the guest for-target; the Docker+prover standalone run is heavy and runs via the demo script. See the CI honesty note below: the workflow is not yet on the public default branch |
+| CI green on default branch | `.github/workflows/ci.yml` (host `test`/`fmt`/`clippy` job + `guest-build` job) | **PENDING**. The host job is verified locally (31 tests, clean fmt/clippy), but `ci.yml` is not yet pushed to the public repo (it needs a `workflow`-scope token). The builder refreshes the token, pushes the workflow, and confirms the Actions run is green. See honesty note below |
 | README with deploy steps, program addresses, CLI mint/rotate/revoke | `README.md` + `docs/AUTHORITY_MODEL.md` | done |
-| Reproducible e2e demo script, real local sequencer, `RISC0_DEV_MODE=0` | `scripts/demo.sh` + `demo/run_demo.sh` (export `RISC0_DEV_MODE=0`, reset chain, fail loudly on missing prereqs) | **DONE** — `demo/run_demo.sh` ran end to end against the standalone sequencer (`demo/demo.cast`) |
-| Recorded video demo showing terminal output incl. `RISC0_DEV_MODE=0` | `demo/demo.cast` / `demo/demo.gif` (terminal recording of the full flow) | terminal recording **DONE**; the prize wants a *narrated* walkthrough, so the builder records narration over the cast (see `SUBMISSION.md`) |
+| Reproducible e2e demo script, real local sequencer, `RISC0_DEV_MODE=0` | `scripts/demo.sh` + `demo/run_demo.sh` (export `RISC0_DEV_MODE=0`, reset chain, fail loudly on missing prereqs) | **DONE**. `demo/run_demo.sh` ran end to end against the standalone sequencer and is the published reproducible driver |
+| Recorded narrated video demo showing terminal output incl. `RISC0_DEV_MODE=0` | the prize requires a *narrated* walkthrough that also shows the `RISC0_DEV_MODE=0` terminal flow; `demo/run_demo.sh` reproduces that flow | **PENDING**. The original terminal recording was made but is not committed (it captured the demo wallet seed). The builder records the narrated video over a fresh `demo/run_demo.sh` run and links it in `SUBMISSION.md` / the solution file |
 
 ## Honesty notes
 
-- **CI green**: the host job (fmt, clippy, 32 tests) and the for-target guest build
-  are verified locally on arm64 macOS with the LEZ circuits installed. The CI
-  workflow has not been executed on GitHub Actions from this checkout, so "CI is
-  green on the default branch" must be confirmed once the repo is pushed and the
-  Actions run completes.
+- **CI green (PENDING)**: the host job (fmt, clippy, 31 tests) and the for-target
+  guest build are verified locally on arm64 macOS with the LEZ circuits installed.
+  The CI workflow (`.github/workflows/ci.yml`) is not yet on the public repo: it is
+  gitignored in this working copy and pushing a workflow file needs a
+  `workflow`-scope token. The builder refreshes the token
+  (`gh auth refresh -h github.com -s workflow`), un-ignores and pushes `ci.yml`,
+  and confirms the Actions run is green. Until then, "CI is green on the default
+  branch" is not satisfied.
 - **On-chain deploy / measured cycles / the `RISC0_DEV_MODE=0` run**: executed
   on 2026-06-05 against a local LEZ standalone sequencer (`nssa_core` v0.2.0-rc3),
   arm64 macOS. Deployable `.bin` built bare on the host and packaged with
   `scripts/package_r0bf.py` (see note below); deploy + both integrations confirmed
   on-chain; the two negative cases rejected with `Program error [1008]` and
-  `[9003]`; per-operation cycle counts read from `demo/sequencer.log`. Artifacts in
-  `demo/`.
+  `[9003]`; per-operation cycle counts read from that run's sequencer log. The raw
+  terminal recordings and log are not committed (they captured the demo wallet seed);
+  the run is reproduced by `demo/run_demo.sh`.
 - **Deployable `.bin` build path**: `cargo risczero build` does **not** work for
   this guest — its Docker build context is only the guest crate dir, so the
   `mint-authority = { path = "../.." }` path dependency is unreachable inside the
@@ -84,16 +88,23 @@ cd mint-authority/examples/spel-token-guest && \
   `InvalidProgramBehavior(ClaimedNonDefaultAccount)`. Fixed with a conditional
   claim (claim only when still default-owned), the RFP-002 marker pattern.
 
-## Manual steps for the submitter
+## Remaining steps for the submitter
 
-1. Run `./scripts/demo.sh` (with Docker up and `LEZ_DIR` set) and confirm both
-   integrations pass and the revoked-authority mint is rejected.
-2. Fill the measured cycle counts into `docs/CU_COST.md` and the program
-   addresses/image id into the README from that run.
-3. **Record the narrated video demo** walking through the architecture and the full
-   end-to-end flow, with the terminal showing `RISC0_DEV_MODE=0` and proof
-   generation. A silent screencast is not sufficient.
-4. Push to a public repo and confirm the GitHub Actions CI run is green.
+Done: the standalone-sequencer run, measured cycle counts in `docs/CU_COST.md`,
+program addresses/image id in the README, and the public repo push. What is left:
+
+1. **Push the CI workflow.** `.github/workflows/ci.yml` exists locally but is
+   gitignored and not on the public repo; pushing it needs a `workflow`-scope
+   token. Refresh the token (`gh auth refresh -h github.com -s workflow`), un-ignore
+   `ci.yml`, push it, and confirm the GitHub Actions run is green on the default
+   branch.
+2. **Record the narrated video demo** walking through the architecture and the full
+   end-to-end flow (reproduce it with `demo/run_demo.sh`), with the terminal showing
+   `RISC0_DEV_MODE=0` and proof generation. A silent screencast is not sufficient.
+   Link it in `SUBMISSION.md` and the staged `solutions/LP-0013.md`.
+3. **Open the submission PR.** The fork and `lp-0013-solution` branch with
+   `solutions/LP-0013.md` are staged on the builder's fork; once the video URL is
+   filled in, run `gh pr create` per `SUBMISSION.md`.
 
 ## Licensing
 
