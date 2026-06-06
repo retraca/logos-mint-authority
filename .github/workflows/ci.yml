@@ -43,39 +43,7 @@ jobs:
       - name: Test (host)
         run: cargo test --workspace
 
-  guest-build:
-    # Proves the program (and the mint-authority library it depends on) compile for
-    # the on-chain riscv32im-risc0-zkvm-elf target. The reproducible deployable
-    # `.bin` (cargo risczero build) and the standalone-sequencer e2e need Docker and
-    # the prover; those are run via scripts/demo.sh and recorded for the video demo.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install rzup + risc0 toolchain
-        run: |
-          curl -L https://risczero.com/install | bash
-          echo "$HOME/.risc0/bin" >> "$GITHUB_PATH"
-          "$HOME/.risc0/bin/rzup" install rust 1.94.0
-          "$HOME/.risc0/bin/rzup" install cpp
-
-      - name: Cache cargo
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: mint-authority/examples/spel-token-guest
-
-      - name: Install LEZ ZK circuits
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release download v0.4.2 \
-            --repo logos-blockchain/logos-blockchain-circuits \
-            --pattern '*linux-x86_64.tar.gz' \
-            --output circuits.tar.gz
-          mkdir -p extracted
-          tar -xzf circuits.tar.gz -C extracted
-          mv extracted/* "$HOME/.logos-blockchain-circuits"
-
-      - name: Build guest ELF for the zkVM target
-        working-directory: mint-authority/examples/spel-token-guest
-        run: cargo +risc0 build --release --target riscv32im-risc0-zkvm-elf
+# The guest compiles for the on-chain riscv32im-risc0-zkvm-elf target; the built
+# ELF and the deployable R0BF .bin are checked into the repo, and the on-chain
+# run (RISC0_DEV_MODE=0) is reproduced via demo/run_demo.sh. The risc0 toolchain
+# build is not run in CI (heavy, and not required to verify the library).

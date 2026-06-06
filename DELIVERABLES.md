@@ -76,14 +76,14 @@ cd mint-authority/examples/spel-token-guest && \
   terminal recordings and log are not committed (they captured the demo wallet seed);
   the run is reproduced by `demo/run_demo.sh`.
 - **Deployable `.bin` build path**: `cargo risczero build` does **not** work for
-  this guest — its Docker build context is only the guest crate dir, so the
+  this guest, since its Docker build context is only the guest crate dir, so the
   `mint-authority = { path = "../.." }` path dependency is unreachable inside the
   container (`failed to read /Cargo.toml`). The guest is built bare with
   `cargo +risc0 build` and packaged into the R0BF container with
   `scripts/package_r0bf.py` (self-tests by reproducing a known-good `.bin`
   byte-for-byte; output validated with `spel program-id`).
 - **`mint_to` claim fix**: on-chain testing surfaced a real defect not caught by
-  host tests — `mint_to` unconditionally claimed the holding PDA, which
+  host tests: `mint_to` unconditionally claimed the holding PDA, which
   `create_token` had already made program-owned, so the sequencer rejected it as
   `InvalidProgramBehavior(ClaimedNonDefaultAccount)`. Fixed with a conditional
   claim (claim only when still default-owned), the RFP-002 marker pattern.
