@@ -1,0 +1,298 @@
+{
+    "version": "0.1.0",
+    "name": "spel_token",
+    "instructions": [
+        {
+            "name": "create_token",
+            "accounts": [
+                {
+                    "name": "state",
+                    "writable": true,
+                    "signer": false,
+                    "init": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": "token"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "name"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "holding",
+                    "writable": true,
+                    "signer": false,
+                    "init": true,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": "holding"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "name"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "holder"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "authority",
+                    "writable": false,
+                    "signer": true,
+                    "init": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "name": "holder",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "decimals",
+                    "type": "u8"
+                },
+                {
+                    "name": "initial_supply",
+                    "type": "u128"
+                }
+            ]
+        },
+        {
+            "name": "mint_to",
+            "accounts": [
+                {
+                    "name": "state",
+                    "writable": true,
+                    "signer": false,
+                    "init": false,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": "token"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "name"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "holding",
+                    "writable": true,
+                    "signer": false,
+                    "init": false,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": "holding"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "name"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "holder"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "authority",
+                    "writable": false,
+                    "signer": true,
+                    "init": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "name": "holder",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "amount",
+                    "type": "u128"
+                }
+            ]
+        },
+        {
+            "name": "rotate_authority",
+            "accounts": [
+                {
+                    "name": "state",
+                    "writable": true,
+                    "signer": false,
+                    "init": false,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": "token"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "name"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "current_authority",
+                    "writable": false,
+                    "signer": true,
+                    "init": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "name",
+                    "type": "string"
+                },
+                {
+                    "name": "new_authority",
+                    "type": "account_id"
+                }
+            ]
+        },
+        {
+            "name": "revoke_authority",
+            "accounts": [
+                {
+                    "name": "state",
+                    "writable": true,
+                    "signer": false,
+                    "init": false,
+                    "pda": {
+                        "seeds": [
+                            {
+                                "kind": "const",
+                                "value": "token"
+                            },
+                            {
+                                "kind": "arg",
+                                "path": "name"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "current_authority",
+                    "writable": false,
+                    "signer": true,
+                    "init": false
+                }
+            ],
+            "args": [
+                {
+                    "name": "name",
+                    "type": "string"
+                }
+            ]
+        }
+    ],
+    "accounts": [
+        {
+            "name": "TokenState",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "name",
+                        "type": "string"
+                    },
+                    {
+                        "name": "decimals",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "total_supply",
+                        "type": "u128"
+                    },
+                    {
+                        "name": "mint_authority",
+                        "type": {
+                            "option": "account_id"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "TokenHolding",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "token",
+                        "type": {
+                            "option": "account_id"
+                        }
+                    },
+                    {
+                        "name": "balance",
+                        "type": "u128"
+                    }
+                ]
+            }
+        }
+    ],
+    "types": [],
+    "errors": [
+        {
+            "code": 3001,
+            "name": "NullAuthority",
+            "msg": "mint authority cannot be the null account"
+        },
+        {
+            "code": 3002,
+            "name": "AlreadyInitialized",
+            "msg": "token state is already initialized"
+        },
+        {
+            "code": 3003,
+            "name": "MintRevoked",
+            "msg": "mint authority has been revoked; supply is fixed"
+        },
+        {
+            "code": 3004,
+            "name": "SupplyOverflow",
+            "msg": "total supply or holder balance overflow"
+        },
+        {
+            "code": 3005,
+            "name": "MismatchedToken",
+            "msg": "holding belongs to a different token"
+        }
+    ]
+}

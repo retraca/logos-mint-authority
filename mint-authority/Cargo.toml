@@ -1,0 +1,16 @@
+[package]
+name = "mint-authority"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Reusable mint-authority model for fungible tokens on the Logos Execution Zone (Logos LP-0013), reusing the RFP-001 admin-authority approval pattern"
+repository = "https://github.com/logos-co/lambda-prize"
+
+[dependencies]
+spel-framework = { git = "https://github.com/logos-co/spel.git" }
+nssa_core = { git = "https://github.com/logos-blockchain/logos-execution-zone.git", tag = "v0.2.0-rc3" }
+borsh = { version = "1.0", features = ["derive"] }
+
+[features]
+# Enables nssa_core host APIs (needed for host-side tests; off for guest builds).
+host = ["nssa_core/host"]

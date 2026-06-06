@@ -1,0 +1,10 @@
+# LP-0013: Token program mint-authority model for the Logos Execution Zone.
+# Dual-licensed MIT OR Apache-2.0.
+[workspace]
+resolver = "2"
+members = [
+    "mint-authority",
+    "mint-authority/examples/spel-token",
+]
+# Detached guest-binary crate: its own workspace, built with `cargo risczero build`.
+exclude = ["mint-authority/examples/spel-token-guest"]

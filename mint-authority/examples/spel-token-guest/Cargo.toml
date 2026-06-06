@@ -1,0 +1,23 @@
+# Detached guest-binary crate (own workspace, NOT a member of the host workspace).
+# Built with `cargo risczero build` (or `cargo +risc0 build` for a bare ELF) to
+# produce the on-chain ELF for the spel-token program.
+[package]
+name = "spel-token-guest"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[workspace]
+
+[[bin]]
+name = "spel_token"
+path = "src/bin/spel_token.rs"
+
+[dependencies]
+spel-framework = { git = "https://github.com/logos-co/spel.git" }
+nssa_core = { git = "https://github.com/logos-blockchain/logos-execution-zone.git", tag = "v0.2.0-rc3" }
+mint-authority = { path = "../.." }
+risc0-zkvm = { version = "=3.0.5", features = ["std"] }
+serde = { version = "1.0", features = ["derive"] }
+borsh = "1.5"
+ruint = "=1.17.0"

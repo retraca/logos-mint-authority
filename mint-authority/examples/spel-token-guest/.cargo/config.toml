@@ -1,0 +1,14 @@
+# Guest build flags for the zkVM target, mirroring what `risc0-build` / `cargo
+# risczero build` inject, so a no-Docker `cargo +risc0 build` produces a valid ELF:
+#   - lower-atomic: zkVM is single-threaded; lower atomics to plain ops (fixes
+#     `undefined symbol: __atomic_*`)
+#   - -Ttext: guest load address
+#   - panic=abort: no unwinding in the guest
+#   - getrandom custom backend (risc0 provides the impl)
+[target.riscv32im-risc0-zkvm-elf]
+rustflags = [
+    "-C", "passes=lower-atomic",
+    "-C", "link-arg=-Ttext=0x00400000",
+    "-C", "panic=abort",
+    "--cfg", 'getrandom_backend="custom"',
+]
