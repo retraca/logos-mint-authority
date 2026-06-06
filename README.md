@@ -39,7 +39,8 @@ companies/logos/lp-0013-mint-authority/
   examples/
     fixed-supply-revoked-authority.md   example integration 1
     variable-supply-mint-authority.md   example integration 2
-  scripts/demo.sh                       reproducible end-to-end demo (RISC0_DEV_MODE=0)
+  demo/run_demo.sh                      reproducible end-to-end demo (RISC0_DEV_MODE=0)
+  scripts/demo.sh                       from-scratch build variant (Docker caveat, see usage)
   DELIVERABLES.md                       per-criterion mapping to code, tests, evidence
 ```
 
@@ -91,19 +92,20 @@ cargo +risc0 build --release --target riscv32im-risc0-zkvm-elf
 ## End-to-end usage (deploy, mint, rotate, revoke)
 
 The reproducible end-to-end flow runs against a real local LEZ sequencer in
-standalone mode with `RISC0_DEV_MODE=0` (real proof generation). One command:
+standalone mode with `RISC0_DEV_MODE=0` (real proof generation), using the
+deployable `.bin` checked into this repo. One command:
 
 ```bash
-LEZ_DIR=../lez-build ./scripts/demo.sh
+LEZ_DIR=../lez-build demo/run_demo.sh
 ```
 
-`scripts/demo.sh` builds the deployable program binary, starts a standalone
-sequencer, deploys the program, creates two accounts, and then runs both example
+`demo/run_demo.sh` deploys the committed program binary, creates two accounts,
+resets the local chain to a clean state each run, and runs both example
 integrations end to end, showing the revoked-authority mint being rejected. The
-recorded run used `demo/run_demo.sh`, which consumes the already-built artifacts
-(the R0BF `.bin` from `scripts/package_r0bf.py` and a prebuilt sequencer) and
-resets the local chain to a clean state each run, so the asciinema cast captures
-the on-chain run rather than a long compile. Requirements:
+deployable `.bin` is packaged with `scripts/package_r0bf.py`: the `cargo
+risczero build` Docker path does not resolve this guest's path dependency, so the
+R0BF binary is packaged directly (see `scripts/demo.sh` for the from-scratch
+build variant). Requirements:
 
 - the `spel` CLI on `PATH`,
 - a `logos-execution-zone` checkout (rev `cf3639d` / tag `v0.2.0-rc3`) at `$LEZ_DIR`,
