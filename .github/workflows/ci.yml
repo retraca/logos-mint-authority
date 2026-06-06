@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install LEZ ZK circuits (required to build nssa_core)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download v0.4.2 \
+            --repo logos-blockchain/logos-blockchain-circuits \
+            --pattern '*linux-x86_64.tar.gz' \
+            --output circuits.tar.gz
+          mkdir -p extracted
+          tar -xzf circuits.tar.gz -C extracted
+          mv extracted/* "$HOME/.logos-blockchain-circuits"
+          test "$(cat "$HOME/.logos-blockchain-circuits/VERSION")" = "v0.4.2"
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test (host)
+        run: cargo test --workspace
+
+  guest-build:
+    # Proves the program (and the mint-authority library it depends on) compile for
+    # the on-chain riscv32im-risc0-zkvm-elf target. The reproducible deployable
+    # `.bin` (cargo risczero build) and the standalone-sequencer e2e need Docker and
+    # the prover; those are run via scripts/demo.sh and recorded for the video demo.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install rzup + risc0 toolchain
+        run: |
+          curl -L https://risczero.com/install | bash
+          echo "$HOME/.risc0/bin" >> "$GITHUB_PATH"
+          "$HOME/.risc0/bin/rzup" install rust 1.94.0
+          "$HOME/.risc0/bin/rzup" install cpp
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: mint-authority/examples/spel-token-guest
+
+      - name: Install LEZ ZK circuits
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download v0.4.2 \
+            --repo logos-blockchain/logos-blockchain-circuits \
+            --pattern '*linux-x86_64.tar.gz' \
+            --output circuits.tar.gz
+          mkdir -p extracted
+          tar -xzf circuits.tar.gz -C extracted
+          mv extracted/* "$HOME/.logos-blockchain-circuits"
+
+      - name: Build guest ELF for the zkVM target
+        working-directory: mint-authority/examples/spel-token-guest
+        run: cargo +risc0 build --release --target riscv32im-risc0-zkvm-elf
